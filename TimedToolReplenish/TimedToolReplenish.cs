@@ -112,10 +112,9 @@ public class Plugin : BaseUnityPlugin
             {
                 idleStateTimer += Time.deltaTime;
 
-                var needsReplenish = false;
-
                 if (idleStateTimer >= configIdleTime.Value)
                 {
+                    var needsReplenish = false;
                     isModReplenishing = true;
 
                     List<ToolItem> currentEquippedTools = getCurrentEquippedTools();
@@ -129,6 +128,14 @@ public class Plugin : BaseUnityPlugin
                         if (toolData.AmountLeft < toolStorageAmount)
                         {
                             needsReplenish = true;
+                            if (item is ToolItemStatesLiquid itemLiquid)
+                            {
+                                needsReplenish = !itemLiquid.IsRefillsFull;
+                            }
+                        }
+
+                        if (needsReplenish)
+                        {
                             break;
                         }
                     }
