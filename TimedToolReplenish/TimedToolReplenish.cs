@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using HarmonyLib;
 using BepInEx;
+using BepInEx.Logging;
 using BepInEx.Configuration;
 using UnityEngine;
 
@@ -17,6 +18,8 @@ public class PluginInfo
 [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
 public class Plugin : BaseUnityPlugin
 {
+    internal static ManualLogSource Log;
+
     private static Harmony harmony;
     private static ConfigEntry<float> configIdleTime;
 
@@ -24,10 +27,17 @@ public class Plugin : BaseUnityPlugin
 
     private void Awake()
     {
+        Log = base.Logger;
+
         configIdleTime = Config.Bind(category, "Idle Time", 5f, "Try to replenish tools if the player has been idle for this long.");
 
         harmony = new Harmony(PluginInfo.PLUGIN_GUID);
         harmony.PatchAll();
+
+        foreach (var m in harmony.GetPatchedMethods())
+        {
+            Log.LogInfo($"Patched: {m.DeclaringType.FullName}.{m.Name}");
+        }
     }
 
     private void OnDestroy()
