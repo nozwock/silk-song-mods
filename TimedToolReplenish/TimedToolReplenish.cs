@@ -22,6 +22,7 @@ public class Plugin : BaseUnityPlugin
 
     private static Harmony harmony;
     private static ConfigEntry<float> configIdleTime;
+    private static ConfigEntry<bool> configReplenishBlueTools;
 
     private const string category = "General";
 
@@ -30,6 +31,7 @@ public class Plugin : BaseUnityPlugin
         Log = base.Logger;
 
         configIdleTime = Config.Bind(category, "Idle Time", 5f, "Try to replenish tools if the player has been idle for this long.");
+        configReplenishBlueTools = Config.Bind(category, "Replenish Blue Tools", false);
 
         harmony = new Harmony(PluginInfo.PLUGIN_GUID);
         harmony.PatchAll();
@@ -44,6 +46,20 @@ public class Plugin : BaseUnityPlugin
     {
         harmony.UnpatchSelf();
         harmony = null;
+    }
+
+    [HarmonyPatch(typeof(ToolItemManager))]
+    class Patch_ToolItemManager
+    {
+        [HarmonyPatch("GetCurrentEquippedTools")]
+        [HarmonyPostfix]
+        static void Postfix_GetCurrentEquippedTools(ref List<ToolItem> __result)
+        {
+            if (Patch_ReplenishToolsOnIdle.isModReplenishing && !configReplenishBlueTools.Value)
+            {
+                __result.RemoveAll(tool => tool == null || tool.Type == ToolItemType.Blue);
+            }
+        }
     }
 
     [HarmonyPatch(typeof(HeroController), "Update")]
@@ -63,6 +79,7 @@ public class Plugin : BaseUnityPlugin
             );
 
         static float idleStateTimer = 0f;
+        internal static bool isModReplenishing = false;
 
         static void Postfix(HeroController __instance)
         {
@@ -99,6 +116,8 @@ public class Plugin : BaseUnityPlugin
 
                 if (idleStateTimer >= configIdleTime.Value)
                 {
+                    isModReplenishing = true;
+
                     List<ToolItem> currentEquippedTools = getCurrentEquippedTools();
                     // Some ToolItem returned by GetCurrentEquippedTools can be null
                     currentEquippedTools.RemoveAll(tool => tool == null);
@@ -118,6 +137,8 @@ public class Plugin : BaseUnityPlugin
                     {
                         ToolItemManager.TryReplenishTools(true, ToolItemManager.ReplenishMethod.Bench);
                     }
+
+                    isModReplenishing = false;
 
                     // Reset so it won’t spam every frame
                     idleStateTimer = 0f;
