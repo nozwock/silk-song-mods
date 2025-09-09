@@ -90,6 +90,8 @@ public class Plugin : BaseUnityPlugin
                 if (idleStateTimer >= configIdleTime.Value)
                 {
                     List<ToolItem> currentEquippedTools = getCurrentEquippedTools();
+                    // Some ToolItem returned by GetCurrentEquippedTools can be null
+                    currentEquippedTools.RemoveAll(tool => tool == null);
                     foreach (var item in currentEquippedTools)
                     {
                         ToolItemsData.Data toolData = PlayerData.instance.GetToolData(item.name);
