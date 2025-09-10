@@ -14,7 +14,7 @@ public class PluginInfo
 {
     public const string PLUGIN_GUID = "nozwock.TimedToolReplenish";
     public const string PLUGIN_NAME = "Timed Tool Replenish";
-    public const string PLUGIN_VERSION = "1.1.1";
+    public const string PLUGIN_VERSION = "1.2.0";
 }
 
 [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
