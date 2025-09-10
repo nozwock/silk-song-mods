@@ -151,9 +151,12 @@ public class Plugin : BaseUnityPlugin
                     && !cState.recoiling
                     && !cState.transitioning;
 
-                if (!isIdle)
+                if (!isIdle || playerData.atBench)
                 {
-                    idleStateTimer = 0f;
+                    if (!gm.isPaused) // Pause shouldn't reset the timer
+                    {
+                        idleStateTimer = 0f;
+                    }
                     return;
                 }
 
