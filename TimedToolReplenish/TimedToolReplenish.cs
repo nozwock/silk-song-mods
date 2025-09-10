@@ -39,9 +39,9 @@ public class Plugin : BaseUnityPlugin
 
         configReplenishMode = Config.Bind(GENERAL, "Replenish Mode", ReplenishMode.Idle);
         configReplenishBlueTools = Config.Bind(GENERAL, "Replenish Blue Tools", false);
-        configIdleTime = Config.Bind(IDLE_MODE, "Idle Time", 5f, "Try to replenish tools if the player has been idle for this long.");
-        configGradualReplenishTime = Config.Bind(GRADUAL_MODE, "Replenish Waiting Time", 10f, "Replenish some percentage of tools' resources every X specified seconds.");
-        configGradualReplenishPercentage = Config.Bind(GRADUAL_MODE, "Replenish Percentage", 10, "How much of tools' resource to replenish when waiting time is over.");
+        configIdleTime = Config.Bind(IDLE_MODE, "Idle Time", 5f, "Time the player must remain idle before tools begin to replenish.");
+        configGradualReplenishTime = Config.Bind(GRADUAL_MODE, "Replenish Waiting Time", 10f, "Restores a portion of tool resources at regular intervals (in seconds).");
+        configGradualReplenishPercentage = Config.Bind(GRADUAL_MODE, "Replenish Percentage", 10, "Percentage of tool resources restored at each interval.");
 
         harmony = new Harmony(PluginInfo.PLUGIN_GUID);
         harmony.PatchAll();
