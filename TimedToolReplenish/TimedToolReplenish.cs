@@ -64,20 +64,6 @@ public class Plugin : BaseUnityPlugin
         Gradual
     }
 
-    [HarmonyPatch(typeof(ToolItemManager))]
-    class Patch_ToolItemManager
-    {
-        [HarmonyPatch("GetCurrentEquippedTools")]
-        [HarmonyPostfix]
-        static void Postfix_GetCurrentEquippedTools(ref List<ToolItem> __result)
-        {
-            if (Patch_ReplenishToolsOnIdle.isModReplenishing && !configReplenishBlueTools.Value)
-            {
-                __result.RemoveAll(tool => tool == null || tool.Type == ToolItemType.Blue);
-            }
-        }
-    }
-
     [HarmonyPatch(typeof(HeroController), "Update")]
     class Patch_ReplenishToolsOnIdle
     {
@@ -96,7 +82,6 @@ public class Plugin : BaseUnityPlugin
 
         static float gradualModeTimer = 0f;
         static float idleStateTimer = 0f;
-        internal static bool isModReplenishing = false;
 
         static void Postfix(HeroController __instance)
         {
@@ -133,9 +118,7 @@ public class Plugin : BaseUnityPlugin
 
                 gradualModeTimer = 0f;
 
-                isModReplenishing = true;
                 ToolReplenishUtil.TryReplenishTools(true, ToolItemManager.ReplenishMethod.BenchSilent);
-                isModReplenishing = false;
             }
             else if (configReplenishMode.Value == ReplenishMode.Idle)
             {
@@ -173,11 +156,7 @@ public class Plugin : BaseUnityPlugin
                 // Reset so it won’t spam every frame
                 idleStateTimer = 0f;
 
-                // Used for "Replenish Blue Tools", won't need this if we switch away from ToolItemManager and have our
-                // own implementation
-                isModReplenishing = true;
-                ToolItemManager.TryReplenishTools(true, ToolItemManager.ReplenishMethod.Bench);
-                isModReplenishing = false;
+                ToolReplenishUtil.TryReplenishTools(true, ToolItemManager.ReplenishMethod.Bench);
             }
         }
     }
@@ -238,7 +217,11 @@ public class Plugin : BaseUnityPlugin
             _liquidCostsTemp?.Clear();
             bool flag2 = false; // tryReplenish
             bool flag3 = true;
-            currentEquippedTools.RemoveAll((ToolItem tool) => tool == null || !tool.IsAutoReplenished());
+            currentEquippedTools.RemoveAll(
+                (ToolItem tool) => tool == null
+                || !tool.IsAutoReplenished()
+                || (!configReplenishBlueTools.Value && tool.Type == ToolItemType.Blue)
+            );
 
             if (configReplenishMode.Value == ReplenishMode.Gradual)
             {
