@@ -165,44 +165,19 @@ public class Plugin : BaseUnityPlugin
 
                 idleStateTimer += Time.deltaTime;
 
-                if (idleStateTimer >= configIdleTime.Value)
+                if (idleStateTimer < configIdleTime.Value)
                 {
-                    // Reset so it won’t spam every frame
-                    idleStateTimer = 0f;
-
-                    var needsReplenish = false;
-                    isModReplenishing = true;
-
-                    List<ToolItem> currentEquippedTools = getCurrentEquippedTools();
-                    // Some ToolItem returned by GetCurrentEquippedTools can be null
-                    currentEquippedTools.RemoveAll(tool => tool == null);
-                    foreach (var item in currentEquippedTools)
-                    {
-                        ToolItemsData.Data toolData = PlayerData.instance.GetToolData(item.name);
-                        int toolStorageAmount = ToolItemManager.GetToolStorageAmount(item);
-
-                        if (toolData.AmountLeft < toolStorageAmount)
-                        {
-                            needsReplenish = true;
-                            if (item is ToolItemStatesLiquid itemLiquid)
-                            {
-                                needsReplenish = !itemLiquid.IsRefillsFull;
-                            }
-                        }
-
-                        if (needsReplenish)
-                        {
-                            break;
-                        }
-                    }
-
-                    if (needsReplenish)
-                    {
-                        ToolItemManager.TryReplenishTools(true, ToolItemManager.ReplenishMethod.Bench);
-                    }
-
-                    isModReplenishing = false;
+                    return;
                 }
+
+                // Reset so it won’t spam every frame
+                idleStateTimer = 0f;
+
+                // Used for "Replenish Blue Tools", won't need this if we switch away from ToolItemManager and have our
+                // own implementation
+                isModReplenishing = true;
+                ToolItemManager.TryReplenishTools(true, ToolItemManager.ReplenishMethod.Bench);
+                isModReplenishing = false;
             }
         }
     }
