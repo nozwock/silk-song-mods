@@ -132,7 +132,10 @@ public class Plugin : BaseUnityPlugin
                 }
 
                 gradualModeTimer = 0f;
+
+                isModReplenishing = true;
                 ToolReplenishUtil.TryReplenishTools(true, ToolItemManager.ReplenishMethod.BenchSilent);
+                isModReplenishing = false;
             }
             else if (configReplenishMode.Value == ReplenishMode.Idle)
             {
