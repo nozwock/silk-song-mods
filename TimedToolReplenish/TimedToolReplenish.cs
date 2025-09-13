@@ -119,6 +119,14 @@ public class Plugin : BaseUnityPlugin
         static float gradualModeTimer = 0f;
         static float idleStateTimer = 0f;
 
+        [HarmonyPatch("Awake")]
+        [HarmonyPostfix]
+        static void Awake_Postfix()
+        {
+            gradualModeTimer = 0f;
+            idleStateTimer = 0f;
+        }
+
         [HarmonyPatch("Update")]
         [HarmonyPostfix]
         static void Update_Postfix(HeroController __instance)
