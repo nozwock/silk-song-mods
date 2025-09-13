@@ -62,6 +62,7 @@ public class Plugin : BaseUnityPlugin
 
     enum ReplenishMode
     {
+        None,
         Idle,
         Gradual
     }
