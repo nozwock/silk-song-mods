@@ -27,6 +27,7 @@ public class Plugin : BaseUnityPlugin
     static ConfigEntry<bool> configReplenishBlueTools;
     static ConfigEntry<int> configGradualReplenishPercentage;
     static ConfigEntry<bool> configInfiniteLiquidRefill;
+    static ConfigEntry<float> configToolCurrencyCostMultiplier;
 
     const string GENERAL = "General";
     const string IDLE_MODE = "Idle Replenish Mode";
@@ -42,6 +43,7 @@ public class Plugin : BaseUnityPlugin
         configGradualReplenishTime = Config.Bind(GRADUAL_MODE, "Replenish Waiting Time", 10f, "Restores a portion of tool resources at regular intervals (in seconds).");
         configGradualReplenishPercentage = Config.Bind(GRADUAL_MODE, "Replenish Percentage", 10, "Percentage of tool resources restored at each interval.");
         configInfiniteLiquidRefill = Config.Bind(GENERAL, "Infinite Liquid Tool Reserve", false);
+        configToolCurrencyCostMultiplier = Config.Bind(GENERAL, "Tool Currency Cost Multiplier", 1f, "Adjusts the currency cost (Shards/Rosary) needed to restore tools, using this multiplier.");
 
         harmony = new Harmony(PLUGIN_GUID);
         harmony.PatchAll();
@@ -62,6 +64,17 @@ public class Plugin : BaseUnityPlugin
     {
         Idle,
         Gradual
+    }
+
+    [HarmonyPatch(typeof(ToolItem))]
+    class Patch_ToolItem
+    {
+        [HarmonyPatch(nameof(ToolItem.ReplenishUsageMultiplier), MethodType.Getter)]
+        [HarmonyPostfix]
+        static void ReplenishUsageMultiplier_Postfix(ref float __result)
+        {
+            __result *= configToolCurrencyCostMultiplier.Value;
+        }
     }
 
     [HarmonyPatch(typeof(ToolItemStatesLiquid))]
