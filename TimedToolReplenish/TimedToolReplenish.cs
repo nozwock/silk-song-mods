@@ -142,6 +142,8 @@ public class Plugin : BaseUnityPlugin
                     // Messes up the UI if you try to replenish tool when just loading into the game, this prevents that.
                     || controlReqlinquished
                     || playerData.atBench
+                    // Prevents game from crashing on trying to replenish tools during the Silk Heart sequence
+                    || !GameCameras.instance.IsHudVisible
                 )
                 {
                     return;
@@ -175,7 +177,11 @@ public class Plugin : BaseUnityPlugin
                     && !cState.recoiling
                     && !cState.transitioning;
 
-                if (!isIdle || playerData.atBench)
+                if (
+                    !isIdle
+                    || playerData.atBench
+                    || !GameCameras.instance.IsHudVisible
+                )
                 {
                     if (!gm.isPaused) // Pause shouldn't reset the timer
                     {
