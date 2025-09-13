@@ -10,24 +10,22 @@ using GlobalEnums;
 
 namespace TimedToolReplenish;
 
-public class PluginInfo
+[BepInPlugin(PLUGIN_GUID, PLUGIN_NAME, PLUGIN_VERSION)]
+public class Plugin : BaseUnityPlugin
 {
     public const string PLUGIN_GUID = "nozwock.TimedToolReplenish";
     public const string PLUGIN_NAME = "Timed Tool Replenish";
     public const string PLUGIN_VERSION = "1.2.1";
-}
 
-[BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
-public class Plugin : BaseUnityPlugin
-{
     internal static ManualLogSource Log;
 
-    private static Harmony harmony;
-    private static ConfigEntry<ReplenishMode> configReplenishMode;
-    private static ConfigEntry<float> configIdleTime;
-    private static ConfigEntry<float> configGradualReplenishTime;
-    private static ConfigEntry<bool> configReplenishBlueTools;
-    private static ConfigEntry<int> configGradualReplenishPercentage;
+    static Harmony harmony;
+
+    static ConfigEntry<ReplenishMode> configReplenishMode;
+    static ConfigEntry<float> configIdleTime;
+    static ConfigEntry<float> configGradualReplenishTime;
+    static ConfigEntry<bool> configReplenishBlueTools;
+    static ConfigEntry<int> configGradualReplenishPercentage;
 
     const string GENERAL = "General";
     const string IDLE_MODE = "Idle Replenish Mode";
@@ -43,7 +41,7 @@ public class Plugin : BaseUnityPlugin
         configGradualReplenishTime = Config.Bind(GRADUAL_MODE, "Replenish Waiting Time", 10f, "Restores a portion of tool resources at regular intervals (in seconds).");
         configGradualReplenishPercentage = Config.Bind(GRADUAL_MODE, "Replenish Percentage", 10, "Percentage of tool resources restored at each interval.");
 
-        harmony = new Harmony(PluginInfo.PLUGIN_GUID);
+        harmony = new Harmony(PLUGIN_GUID);
         harmony.PatchAll();
 
         foreach (var m in harmony.GetPatchedMethods())
@@ -64,8 +62,8 @@ public class Plugin : BaseUnityPlugin
         Gradual
     }
 
-    [HarmonyPatch(typeof(HeroController), "Update")]
-    class Patch_ReplenishToolsOnIdle
+    [HarmonyPatch(typeof(HeroController))]
+    class Patch_HeroController
     {
         static readonly AccessTools.FieldRef<HeroController, GameManager> gmRef =
             AccessTools.FieldRefAccess<HeroController, GameManager>("gm");
@@ -79,7 +77,9 @@ public class Plugin : BaseUnityPlugin
         static float gradualModeTimer = 0f;
         static float idleStateTimer = 0f;
 
-        static void Postfix(HeroController __instance)
+        [HarmonyPatch("Update")]
+        [HarmonyPostfix]
+        static void Update_Postfix(HeroController __instance)
         {
             var gm = gmRef(__instance);
             var cState = __instance.cState;
