@@ -26,6 +26,7 @@ public class Plugin : BaseUnityPlugin
     static ConfigEntry<float> configGradualReplenishTime;
     static ConfigEntry<bool> configReplenishBlueTools;
     static ConfigEntry<int> configGradualReplenishPercentage;
+    static ConfigEntry<bool> configInfiniteLiquidRefill;
 
     const string GENERAL = "General";
     const string IDLE_MODE = "Idle Replenish Mode";
@@ -40,6 +41,7 @@ public class Plugin : BaseUnityPlugin
         configIdleTime = Config.Bind(IDLE_MODE, "Idle Time", 5f, "Time the player must remain idle before tools begin to replenish.");
         configGradualReplenishTime = Config.Bind(GRADUAL_MODE, "Replenish Waiting Time", 10f, "Restores a portion of tool resources at regular intervals (in seconds).");
         configGradualReplenishPercentage = Config.Bind(GRADUAL_MODE, "Replenish Percentage", 10, "Percentage of tool resources restored at each interval.");
+        configInfiniteLiquidRefill = Config.Bind(GENERAL, "Infinite Liquid Tool Reserve", false);
 
         harmony = new Harmony(PLUGIN_GUID);
         harmony.PatchAll();
@@ -60,6 +62,32 @@ public class Plugin : BaseUnityPlugin
     {
         Idle,
         Gradual
+    }
+
+    [HarmonyPatch(typeof(ToolItemStatesLiquid))]
+    class Patch_ToolItemStatesLiquid
+    {
+        [HarmonyPatch(nameof(ToolItemStatesLiquid.HasInfiniteRefills), MethodType.Getter)]
+        [HarmonyPrefix]
+        static bool HasInfiniteRefills_Prefix(ref bool __result)
+        {
+            if (configInfiniteLiquidRefill.Value)
+            {
+                __result = true;
+                return false;
+            }
+            return true;
+        }
+
+        [HarmonyPatch(nameof(ToolItemStatesLiquid.LiquidSavedData), MethodType.Getter)]
+        [HarmonyPostfix]
+        static void LiquidSavedData_Postfix(ref ToolItemStatesLiquid __instance, ref ToolItemLiquidsData.Data __result)
+        {
+            if (configInfiniteLiquidRefill.Value)
+            {
+                __result.RefillsLeft = __instance.RefillsMax;
+            }
+        }
     }
 
     [HarmonyPatch(typeof(HeroController))]
