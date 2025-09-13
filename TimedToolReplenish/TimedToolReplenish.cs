@@ -75,10 +75,6 @@ public class Plugin : BaseUnityPlugin
             AccessTools.FieldRefAccess<HeroController, float>("attack_time");
         static readonly AccessTools.FieldRef<HeroController, Rigidbody2D> rb2dRef =
             AccessTools.FieldRefAccess<HeroController, Rigidbody2D>("rb2d");
-        static readonly System.Func<List<ToolItem>> getCurrentEquippedTools =
-            AccessTools.MethodDelegate<System.Func<List<ToolItem>>>(
-                AccessTools.Method(typeof(ToolItemManager), "GetCurrentEquippedTools")
-            );
 
         static float gradualModeTimer = 0f;
         static float idleStateTimer = 0f;
